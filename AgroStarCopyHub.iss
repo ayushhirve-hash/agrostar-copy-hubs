@@ -1,6 +1,6 @@
 [Setup]
 AppName=AgroStar Copy Hub
-AppVersion=1.1.0
+AppVersion=1.2.0
 PrivilegesRequired=lowest
 DefaultDirName={localappdata}\Programs\AgroStar Copy Hub
 DefaultGroupName=AgroStar Copy Hub
