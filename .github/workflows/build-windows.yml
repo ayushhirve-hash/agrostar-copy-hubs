@@ -1,0 +1,46 @@
+name: Build AgroStar Copy Hub
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build application EXE
+        run: pyinstaller --noconfirm --clean --onefile --windowed --name "AgroStar Copy Hub" app.py
+
+      - name: Install Inno Setup
+        shell: powershell
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: powershell
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "AgroStarCopyHub.iss"'
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: AgroStar-Copy-Hub-Installer
+          path: dist/AgroStar Copy Hub Setup.exe
+          if-no-files-found: error
+
+      - name: Upload portable EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: AgroStar-Copy-Hub-Portable
+          path: dist/AgroStar Copy Hub.exe
+          if-no-files-found: error
