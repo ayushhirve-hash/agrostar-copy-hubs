@@ -1,12 +1,15 @@
 # AgroStar Copy Hub
 
-Windows desktop utility for creative copy translation and Indian-language quick typing.
+Windows desktop utility for creative copy translation and Google Input Tools-style Indian-language quick typing.
 
-## V1
+## Features
 - Hindi, Marathi, Gujarati, Telugu, Kannada and English output
 - Copy / Copy All
-- Quick Roman-to-Indic typing
-- Windows installer generated automatically by GitHub Actions
+- Roman-to-Indic candidate suggestions
+- Google Input Tools-style numbered suggestion list
+- Ctrl + Shift + A global shortcut
+- Runs hidden in the background after Windows startup
+- Per-user installation, no admin rights required
 - No paid API key required
 
-The installer is produced as a GitHub Actions artifact named `AgroStar-Copy-Hub-Installer`.
+The installer and portable EXE are produced automatically by GitHub Actions.
