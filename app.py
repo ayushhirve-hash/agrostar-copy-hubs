@@ -1,4 +1,4 @@
-import json, os, re, queue, threading, tkinter as tk
+import json, os, re, threading, tkinter as tk
 from tkinter import ttk, messagebox
 from urllib.parse import quote
 from urllib.request import Request, urlopen
@@ -45,16 +45,22 @@ def candidates_for(word,lang):
         url=f"https://inputtools.google.com/request?text={quote(word,safe='')}&itc={code}&num=8&cp=0&cs=1&ie=utf-8&oe=utf-8"
         with urlopen(Request(url,headers={"User-Agent":"Mozilla/5.0"}),timeout=6) as r:
             d=json.loads(r.read().decode("utf-8"))
-        if isinstance(d,list) and len(d)>1 and isinstance(d[1],list) and d[1] and isinstance(d[1][0],list):return [str(x) for x in d[1][0][:8]]
-    except Exception:pass
+        # Google Input Tools response: [status, [[typed_word, [candidate1, candidate2, ...], ...]]]
+        if isinstance(d,list) and len(d)>1 and isinstance(d[1],list) and d[1]:
+            row=d[1][0]
+            if isinstance(row,list) and len(row)>1 and isinstance(row[1],list):
+                return [str(x) for x in row[1][:8] if isinstance(x,str) and x.strip()]
+    except Exception:
+        pass
     return []
 
 class App:
     def __init__(self,root,background=False):
         self.root=root; self.cfg=load_config(); self.result_boxes={}; self.quick_after=None
         self.candidates=[]; self.candidate_box=None; self.hotkey_stop=False; self.hotkey_thread=None
-        self.setup_theme(); self.build_ui(); self.start_global_hotkey()
+        # Hide before building the UI when launched by Windows Startup, so there is no visible flash.
         if background:self.root.withdraw()
+        self.setup_theme(); self.build_ui(); self.start_global_hotkey()
 
     def setup_theme(self):
         self.root.configure(bg="#101214"); s=ttk.Style(self.root)
@@ -68,7 +74,7 @@ class App:
         s.configure("TNotebook",background=bg,borderwidth=0); s.configure("TNotebook.Tab",background="#20242a",foreground=muted,padding=(18,9))
         s.map("TNotebook.Tab",background=[("selected","#2b3037")],foreground=[("selected",fg)])
         s.configure("TLabelframe",background=panel,foreground=fg,bordercolor="#343a42"); s.configure("TLabelframe.Label",background=panel,foreground=fg,font=("Segoe UI",10,"bold"))
-        s.configure("TCheckbutton",background=panel,foreground=fg); s.configure("TCombobox",fieldbackground=field,background=field,foreground="#111315",arrowcolor="#111315")
+        s.configure("TCheckbutton",background=panel,foreground=fg); s.configure("TCombobox",fieldbackground=field,background=field,foreground=fg,arrowcolor=fg)
         self.C={"bg":bg,"panel":panel,"field":field,"fg":fg,"muted":muted,"accent":accent}
 
     def text(self,parent,height=5,font=("Segoe UI",12)):
@@ -139,7 +145,7 @@ class App:
         if self.quick_after:
             try:self.root.after_cancel(self.quick_after)
             except Exception:pass
-        self.quick_after=self.root.after(180,self.fetch_candidates)
+        self.quick_after=self.root.after(150,self.fetch_candidates)
 
     def fetch_candidates(self):
         self.quick_after=None; start,end,word=self.current_word_range(); lang=self.type_lang.get()
